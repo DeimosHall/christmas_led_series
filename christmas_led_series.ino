@@ -1,9 +1,15 @@
+#include "BluetoothSerial.h"
+
 #define INPUT_1 25
 #define INPUT_2 26
 #define LED_1 33
 #define LED_2 32
 #define LED_3 18
 #define LED_4 19
+
+BluetoothSerial SerialBT;
+const String DEVICE_NAME = "ESP32 board";
+byte dataRX;
 
 int flag = 0;
 int serie = 0;
@@ -16,13 +22,28 @@ void setup() {
   pinMode(LED_3, OUTPUT);
   pinMode(LED_4, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+  SerialBT.begin(DEVICE_NAME);
+  
+  Serial.begin(115200);
 }
 
 void loop() {
+  serialEvent();
+  
   Serial.println("Mode: " + String(getMode()) + ", Serie: " + String(serie));
   if (getMode() != 0) {
     serie = getMode();
+  }
+
+  if (dataRX == '0') {
+    serie = 0;
+  } else if (dataRX == '1') {
+    serie = 1;
+  } else if (dataRX == '2') {
+    serie = 2;
+  } else if (dataRX == '3') {
+    serie = 3;
   }
   
   if (serie == 1) {
@@ -31,6 +52,15 @@ void loop() {
     mode2();
   } else if (serie == 3) {
     mode3();
+  }
+}
+
+void serialEvent() {
+  delay(20);
+
+  if (SerialBT.available()) {
+    dataRX = SerialBT.read();
+    Serial.write(dataRX);
   }
 }
 
